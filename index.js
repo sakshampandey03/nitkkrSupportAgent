@@ -1,5 +1,7 @@
 import puppeteer from "puppeteer";
-
+import dotenv from 'dotenv'
+dotenv.config()
+const key = process.env.GEMINI_API_KEY
 import { pipeline } from "@xenova/transformers";
 import fs from "fs";
 import { links } from "./linkD0.js";
@@ -164,7 +166,7 @@ async function storeEmbeddings() {
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 // Initialize Gemini
-const genAI = new GoogleGenerativeAI("AIzaSyCb-e-G-c6t-GLLe-S9gQKMSF8OAEbCphg"); // Replace with your Gemini API key
+const genAI = new GoogleGenerativeAI(key); // Replace with your Gemini API key
 const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
 async function queryChromaDB(query) {
