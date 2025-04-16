@@ -1,7 +1,24 @@
+version: "3.9"
+
 services:
   chromadb:
     image: chromadb/chroma
     ports:
       - "8000:8000"
+    volumes:
+      - chroma_data:/chroma/.chroma/index # persistent volume
 
-    
+  app:
+    build: .
+    ports:
+      - "3000:3000"  # if your script starts a server, otherwise you can omit
+    depends_on:
+      - chromadb
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    volumes:
+      - .:/app
+    command: ["node", "index2.js"]
+
+volumes:
+  chroma_data:

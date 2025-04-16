@@ -1,7 +1,7 @@
 import puppeteer from "puppeteer";
-import dotenv from 'dotenv'
-dotenv.config()
-const key = process.env.GEMINI_API_KEY
+import dotenv from "dotenv";
+dotenv.config();
+const key = process.env.GEMINI_API_KEY;
 import { pipeline } from "@xenova/transformers";
 import fs from "fs";
 import { links } from "./linkD0.js";
@@ -44,10 +44,10 @@ async function scrapePage(browser, url) {
           }
           nextElement = nextElement.nextElementSibling;
         }
-
-        if (section.content.length > 0) {
-          results.push(section);
-        }
+        // commented out this section so that all the links could be included as well
+        // if (section.content.length > 0) {
+        //   results.push(section);
+        // }
       });
 
       return results;
@@ -210,7 +210,12 @@ async function generateResponse(query) {
     const context = results.metadatas[0]
       .map((metadata, index) => {
         if (metadata && metadata.url && metadata.content) {
-          console.log("printing meta data \n", typeof(metadata), "\n", metadata.url);
+          console.log(
+            "printing meta data \n",
+            typeof metadata,
+            "\n",
+            metadata.url
+          );
           return `Source: ${metadata.url}\n${metadata.content}`;
         }
         return null;
@@ -268,7 +273,7 @@ Answer:`;
 
 // Example usage
 (async () => {
-  const query = "priyanka-ahlawat";
+  const query = "admission in btech";
   const response = await generateResponse(query);
   console.log(response);
 })();

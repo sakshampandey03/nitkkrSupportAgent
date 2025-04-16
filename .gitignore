@@ -2,3 +2,4 @@ node_modules
 nitkkr_full.txt
 embeddings.json
 .env
+scraped_data1.json
