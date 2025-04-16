@@ -11,15 +11,25 @@ import express from 'express';
 
 const visitedUrls = new Set();
 const scrapedData = [];
+
+if (!process.env.CHROMA_DB_AUTH_TOKEN) {
+  console.error("❌ CHROMA_DB_AUTH_TOKEN is missing from .env!");
+  process.exit(1);
+}
+
 // Initialize ChromaDB client with authentication
 const chromaClient = new ChromaClient({
-  path:  "http://localhost:8000",
+  path:  "http://chromadb:8000",
   auth: {
     provider: 'token',
-    credentials: process.env.CHROMA_DB_AUTH_TOKEN || 'your-secret-token-here'
+    credentials: process.env.CHROMA_DB_AUTH_TOKEN || 'your-secret-token-here',
+    headerType: 'AUTHORIZATION' 
   }
 });
-
+console.log('ChromaDB connection configured with:',
+  `Endpoint: http://chromadb:8000`,
+  `Auth Token: ${process.env.CHROMA_DB_AUTH_TOKEN ? '*****' + process.env.CHROMA_DB_AUTH_TOKEN.slice(-4) : 'NOT SET'}`
+);
 // Initialize Gemini
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
@@ -225,7 +235,25 @@ async function generateResponse(query) {
       return "I couldn't find the exact details, but you might check these official pages:\n- [NIT Kurukshetra Admissions](https://nitkkr.ac.in)\n- [Academic Programs](https://nitkkr.ac.in/academics.php)";
     }
 
-    const prompt = `You are an AI assistant for NIT Kurukshetra. Provide helpful responses based on this context:
+    const prompt = `You are an AI assistant for NIT Kurukshetra. Provide helpful responses based on the context.Your goal is to assist users by utilizing the given context while maintaining clarity, conciseness, and helpfulness.  
+
+**Guidelines for Response Generation:**  
+1. **If the context contains a direct answer:** Provide a precise and structured response, ensuring clarity and relevance.  
+2. **If the context provides partial or related information:**  
+   - Use the available details to give the most relevant response.  
+   - Clearly indicate any limitations in the data while ensuring the response is still useful.  
+3. **If no relevant context is found:**  
+   - Suggest alternative ways the user might find the required information.  
+   - Provide official NIT Kurukshetra website links related to the topic.  
+   - Avoid saying *"I don't have enough information"*. Instead, guide the user towards a possible solution.  
+4. ** Use emoticons in the response to make it more attractive
+**Example Structure:**  
+
+> *"I couldn't find the exact details for [query], but you might find relevant information on the following pages:"*  
+> - **[Related Page Name]**: [URL]  
+> - **[Another Relevant Page]**: [URL]  
+
+Maintain a professional and helpful tone in all responses. If any official resources are available, prioritize sharing those. 
 
 Context:
 ${context}
@@ -274,6 +302,17 @@ app.post('/query', async (req, res) => {
     res.json({ response });
   } catch (error) {
     res.status(500).send("Query failed: " + error.message);
+  }
+});
+
+
+app.get('/health', (req, res) => {
+  try {
+    // Optional: Check ChromaDB connection
+    // await chromaClient.heartbeat();
+    res.status(200).json({ status: 'healthy' });
+  } catch (error) {
+    res.status(500).json({ status: 'unhealthy', error: error.message });
   }
 });
 

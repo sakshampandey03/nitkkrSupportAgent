@@ -7,15 +7,31 @@ services:
       - "8000:8000"
     volumes:
       - chroma_data:/chroma/.chroma/index # persistent volume
-
+    environment:
+      - CHROMA_SERVER_CORS_ALLOW_ORIGINS=http://localhost:3000,http://host.docker.internal:3000
+      - CHROMA_SERVER_AUTH_CREDENTIALS=${CHROMA_DB_AUTH_TOKEN}
+      - CHROMA_SERVER_AUTH_PROVIDER=token
+      - CHROMA_SERVER_AUTH_TOKEN_TRANSPORT_HEADER=Authorization
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/heartbeat"]
+      interval: 5s
+      timeout: 10s
+      retries: 5
   app:
     build: .
     ports:
       - "3000:3000"  # if your script starts a server, otherwise you can omit
     depends_on:
       - chromadb
+    env_file: .env
     environment:
       - GEMINI_API_KEY=${GEMINI_API_KEY}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]  # Add this endpoint to your app
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
     volumes:
       - .:/app
     command: ["node", "index2.js"]
