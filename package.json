@@ -5,7 +5,8 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index2.js"
   },
   "author": "",
   "license": "ISC",
@@ -14,6 +15,7 @@
     "axios": "^1.8.3",
     "cheerio": "^1.0.0",
     "chromadb": "^2.0.1",
+    "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^5.1.0",
     "fs": "^0.0.1-security",

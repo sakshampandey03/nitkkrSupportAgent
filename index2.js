@@ -19,10 +19,10 @@ if (!process.env.CHROMA_DB_AUTH_TOKEN) {
 
 // Initialize ChromaDB client with authentication
 const chromaClient = new ChromaClient({
-  path:  "http://chromadb:8000",
+  path:  process.env.CHROMA_DB_HOST || "http://chromadb:8000",
   auth: {
     provider: 'token',
-    credentials: process.env.CHROMA_DB_AUTH_TOKEN || 'your-secret-token-here',
+    credentials: process.env.CHROMA_DB_AUTH_TOKEN ,
     headerType: 'AUTHORIZATION' 
   }
 });
@@ -278,7 +278,7 @@ async function ex(){
 // -----------------------server setup------------------------------------------------------
 const app = express();
 app.use(express.json());
-
+app.use(cors());
 // Initialize endpoint
 app.post('/initialize', async (req, res) => {
   try {
