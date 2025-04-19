@@ -131,7 +131,40 @@ async function storeEmbeddings() {
     console.error("Error storing embeddings:", error);
   }
 }
+async function loadEmbeddings(){
+  try {
+    const Data = JSON.parse(fs.readFileSync("scraped_data1.json", "utf8"));
+    let collection;
+    try {
+      collection = await chromaClient.getOrCreateCollection({
+        name: "website_data",
+      });
+      console.log("Collection is ready.");
+    } catch (err) {
+      console.error("Error getting/creating collection:", err);
+    }
+    for (const item of Data) {
+      for (const section of item.sections) {
+        const text = `${item.url}\n${section.heading}\n${section.content.join("\n")}`;
+        const embedding = await generateEmbeddings(text);
+    
+        await collection.add({
+          ids: [item.url + section.heading], // make this unique
+          embeddings: [embedding],
+          metadatas: [{
+            url: item.url,
+            section: section.heading,
+            content: text,
+          }],
+        });
+      }
+    }
+    console.log("embeddings created and stored successfully")
 
+  } catch (error) {
+    console.log("error in load embeddings function ", error);
+  }
+}
 // -----------------------query using gemini------------------------------------------------------
 async function queryChromaDB(query) {
   try {
@@ -262,8 +295,9 @@ app.listen(PORT, async () => {
   // Optional: Auto-initialize on startup (not recommended for production)
   if (process.env.AUTO_INITIALIZE) {
     try {
-      await createEmbeddings();
-      await storeEmbeddings();
+      // await createEmbeddings();
+      // await storeEmbeddings();
+      await loadEmbeddings();
     } catch (error) {
       console.error("Auto-initialization failed:", error);
     }
