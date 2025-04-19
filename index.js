@@ -49,88 +49,6 @@ async function generateEmbeddings(text) {
   return Array.from(output.data);
 }
 
-async function createEmbeddings() {
-  // Load the embedding model
-
-  // Load the scraped data
-  try {
-    const Data = JSON.parse(fs.readFileSync("scraped_data1.json", "utf8"));
-
-    // Process the scraped data
-    const embeddings = [];
-    for (const item of Data) {
-      for (const section of item.sections) {
-        const text = `${item.url}\n${section.heading}\n${section.content.join(
-          "\n"
-        )}`;
-        const embedding = await generateEmbeddings(text);
-        embeddings.push({
-          url: item.url,
-          section: section.heading,
-          content: text,
-          embedding: embedding,
-        });
-      }
-    }
-
-    // Save embeddings to a file
-    fs.writeFileSync("embeddings.json", JSON.stringify(embeddings, null, 2));
-    console.log("Embeddings generated and saved to embeddings.json");
-  } catch (error) {
-    console.log("error in create embeddings", error);
-  }
-}
-
-// --------------------------store embeddings--------------------------------------------------------
-// Load embeddings
-const embeddings = JSON.parse(fs.readFileSync("embeddings.json", "utf8"));
-
-async function storeEmbeddings() {
-  try {
-    // Delete the existing collection (if it exists)
-    try {
-      await chromaClient.deleteCollection({ name: "website_data" });
-      console.log("Deleted existing collection.");
-    } catch (error) {
-      console.log("No existing collection to delete.");
-    }
-
-    // Create a new collection
-    let collection;
-    try {
-      collection = await chromaClient.getOrCreateCollection({
-        name: "website_data",
-      });
-      console.log("Collection is ready.");
-    } catch (err) {
-      console.error("Error getting/creating collection:", err);
-    }
-
-    // Add embeddings to the collection
-    for (const item of embeddings) {
-      if (!item || !item.embedding) {
-        console.error("Embedding is undefined for item:", item.url);
-        continue; // Skip items with undefined embeddings
-      }
-
-      await collection.add({
-        ids: [item.url], // Unique ID for each embedding (e.g., URL)
-        embeddings: [item.embedding], // The embedding vector
-        metadatas: [
-          {
-            url: item.url,
-            section: item.section,
-            content: item.content,
-          },
-        ],
-      });
-    }
-
-    console.log("Embeddings stored in Chroma DB!");
-  } catch (error) {
-    console.error("Error storing embeddings:", error);
-  }
-}
 async function loadEmbeddings(){
   try {
     const Data = JSON.parse(fs.readFileSync("scraped_data1.json", "utf8"));
@@ -303,3 +221,87 @@ app.listen(PORT, async () => {
     }
   }
 });
+
+
+// async function createEmbeddings() {
+//   // Load the embedding model
+
+//   // Load the scraped data
+//   try {
+//     const Data = JSON.parse(fs.readFileSync("scraped_data1.json", "utf8"));
+
+//     // Process the scraped data
+//     const embeddings = [];
+//     for (const item of Data) {
+//       for (const section of item.sections) {
+//         const text = `${item.url}\n${section.heading}\n${section.content.join(
+//           "\n"
+//         )}`;
+//         const embedding = await generateEmbeddings(text);
+//         embeddings.push({
+//           url: item.url,
+//           section: section.heading,
+//           content: text,
+//           embedding: embedding,
+//         });
+//       }
+//     }
+
+//     // Save embeddings to a file
+//     fs.writeFileSync("embeddings.json", JSON.stringify(embeddings, null, 2));
+//     console.log("Embeddings generated and saved to embeddings.json");
+//   } catch (error) {
+//     console.log("error in create embeddings", error);
+//   }
+// }
+
+// // --------------------------store embeddings--------------------------------------------------------
+// // Load embeddings
+// // const embeddings = JSON.parse(fs.readFileSync("embeddings.json", "utf8"));
+
+// async function storeEmbeddings() {
+//   try {
+//     // Delete the existing collection (if it exists)
+//     try {
+//       await chromaClient.deleteCollection({ name: "website_data" });
+//       console.log("Deleted existing collection.");
+//     } catch (error) {
+//       console.log("No existing collection to delete.");
+//     }
+
+//     // Create a new collection
+//     let collection;
+//     try {
+//       collection = await chromaClient.getOrCreateCollection({
+//         name: "website_data",
+//       });
+//       console.log("Collection is ready.");
+//     } catch (err) {
+//       console.error("Error getting/creating collection:", err);
+//     }
+
+//     // Add embeddings to the collection
+//     for (const item of embeddings) {
+//       if (!item || !item.embedding) {
+//         console.error("Embedding is undefined for item:", item.url);
+//         continue; // Skip items with undefined embeddings
+//       }
+
+//       await collection.add({
+//         ids: [item.url], // Unique ID for each embedding (e.g., URL)
+//         embeddings: [item.embedding], // The embedding vector
+//         metadatas: [
+//           {
+//             url: item.url,
+//             section: item.section,
+//             content: item.content,
+//           },
+//         ],
+//       });
+//     }
+
+//     console.log("Embeddings stored in Chroma DB!");
+//   } catch (error) {
+//     console.error("Error storing embeddings:", error);
+//   }
+// }
