@@ -34,7 +34,7 @@ services:
       start_period: 60s
     volumes:
       - .:/app
-    command: ["node", "index2.js"]
+    command: ["node", "index.js"]
 
 volumes:
   chroma_data:

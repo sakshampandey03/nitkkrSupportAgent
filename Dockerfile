@@ -20,6 +20,7 @@ WORKDIR /usr/src/app
 
 # Copy package files and install dependencies
 COPY package*.json ./
+COPY embeddings.json ./
 RUN npm install
 
 # Copy rest of the app

@@ -2,4 +2,6 @@ node_modules
 nitkkr_full.txt
 embeddings.json
 .env
-scraped_data1.json
+index_old.js
+linkD0.js
+links.json
